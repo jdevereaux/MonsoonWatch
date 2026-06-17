@@ -1,6 +1,5 @@
 name: Build Android App Bundle (AAB)
 
-# Trigger manually from the Actions tab, or on every push to main
 on:
   workflow_dispatch:
   push:
@@ -33,10 +32,11 @@ jobs:
           mkdir -p android/app/src/main/assets
           cp src/assets/monsoon_weather_tracker.html android/app/src/main/assets/
 
-      # ── Signing keystore ──────────────────────────────────────────────
-      # Create a keystore once locally, base64-encode it, and store it as a
-      # GitHub secret named ANDROID_KEYSTORE_BASE64. This step decodes it
-      # back into a file the build can use, without ever committing it to git.
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: 8.6
+
       - name: Decode signing keystore
         run: |
           mkdir -p android/app/keystore
@@ -50,8 +50,7 @@ jobs:
           MONSOON_UPLOAD_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           cd android
-          chmod +x ./gradlew
-          ./gradlew bundleRelease
+          gradle bundleRelease --no-daemon
 
       - name: Upload AAB as downloadable artifact
         uses: actions/upload-artifact@v4
@@ -63,7 +62,7 @@ jobs:
       - name: Also build a debug APK for quick device testing
         run: |
           cd android
-          ./gradlew assembleDebug
+          gradle assembleDebug --no-daemon
 
       - name: Upload debug APK as downloadable artifact
         uses: actions/upload-artifact@v4
