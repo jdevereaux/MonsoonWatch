@@ -26,6 +26,16 @@ jobs:
 
       - name: Install npm dependencies
         run: npm install
+        - name: Debug - inspect react-native gradle plugin package
+        run: |
+          echo "=== Does the gradle-plugin folder exist? ==="
+          ls -la node_modules/@react-native/gradle-plugin/ || echo "FOLDER MISSING"
+          echo "=== Its settings.gradle.kts (if any) ==="
+          cat node_modules/@react-native/gradle-plugin/settings.gradle.kts 2>/dev/null || echo "NO settings.gradle.kts"
+          echo "=== Its build.gradle.kts (if any) ==="
+          cat node_modules/@react-native/gradle-plugin/build.gradle.kts 2>/dev/null || echo "NO build.gradle.kts"
+          echo "=== package.json version installed ==="
+          cat node_modules/@react-native/gradle-plugin/package.json 2>/dev/null | grep version
 
       - name: Copy HTML asset into Android assets folder
         run: |
