@@ -1,0 +1,53 @@
+require_relative '../node_modules/react-native/scripts/react_native_pods'
+require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
+
+platform :ios, min_ios_version_supported
+prepare_react_native_project!
+
+linkage = ENV['USE_FRAMEWORKS']
+if linkage != nil
+  Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
+  use_frameworks! :linkage => linkage.to_sym
+end
+
+target 'MonsoonWatch' do
+  config = use_native_modules!
+
+  use_react_native!(
+    :path => config[:reactNativePath],
+    :hermes_enabled => true,
+    :fabric_enabled => false,
+    :flipper_configuration => FlipperConfiguration.disabled,
+    :app_path => "#{Pod::Config.instance.installation_root}/.."
+  )
+
+  # WebView
+  pod 'react-native-webview', :path => '../node_modules/react-native-webview'
+
+  # Geolocation
+  pod 'react-native-geolocation-service', :path => '../node_modules/react-native-geolocation-service'
+
+  # Permissions
+  pod 'RNPermissions', :path => '../node_modules/react-native-permissions'
+  permissions_path = '../node_modules/react-native-permissions/ios'
+  pod 'Permission-LocationWhenInUse', :path => "#{permissions_path}/LocationWhenInUse"
+  pod 'Permission-Notifications', :path => "#{permissions_path}/Notifications"
+
+  # NetInfo
+  pod 'RNCNetInfo', :path => '../node_modules/@react-native-community/netinfo'
+
+  # Splash screen
+  pod 'RNSplashScreen', :path => '../node_modules/react-native-splash-screen'
+
+  # Safe area
+  pod 'RNScreens', :path => '../node_modules/react-native-screens'
+  pod 'RNSafeAreaContext', :path => '../node_modules/react-native-safe-area-context'
+
+  post_install do |installer|
+    react_native_post_install(
+      installer,
+      config[:reactNativePath],
+      :mac_catalyst_enabled => false
+    )
+  end
+end

@@ -1,0 +1,73 @@
+name: Build Android App Bundle (AAB)
+
+# Trigger manually from the Actions tab, or on every push to main
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Install npm dependencies
+        run: npm install
+
+      - name: Copy HTML asset into Android assets folder
+        run: |
+          mkdir -p android/app/src/main/assets
+          cp src/assets/monsoon_weather_tracker.html android/app/src/main/assets/
+
+      # ── Signing keystore ──────────────────────────────────────────────
+      # Create a keystore once locally, base64-encode it, and store it as a
+      # GitHub secret named ANDROID_KEYSTORE_BASE64. This step decodes it
+      # back into a file the build can use, without ever committing it to git.
+      - name: Decode signing keystore
+        run: |
+          mkdir -p android/app/keystore
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/app/keystore/monsoon-upload-key.keystore
+
+      - name: Build signed release AAB
+        env:
+          MONSOON_UPLOAD_STORE_FILE: keystore/monsoon-upload-key.keystore
+          MONSOON_UPLOAD_STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          MONSOON_UPLOAD_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          MONSOON_UPLOAD_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          cd android
+          chmod +x ./gradlew
+          ./gradlew bundleRelease
+
+      - name: Upload AAB as downloadable artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-aab
+          path: android/app/build/outputs/bundle/release/app-release.aab
+          retention-days: 30
+
+      - name: Also build a debug APK for quick device testing
+        run: |
+          cd android
+          ./gradlew assembleDebug
+
+      - name: Upload debug APK as downloadable artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30

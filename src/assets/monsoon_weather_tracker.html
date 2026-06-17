@@ -1,0 +1,1492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>MonsoonWatch — US Weather Tracker</title>
+<style>
+  :root {
+    --bg: #0a0f1e;
+    --bg2: #111827;
+    --bg3: #1a2235;
+    --card: #162032;
+    --card2: #1e2d42;
+    --border: rgba(99,179,237,0.15);
+    --border2: rgba(99,179,237,0.3);
+    --blue: #4299e1;
+    --blue2: #63b3ed;
+    --blue3: #90cdf4;
+    --teal: #38b2ac;
+    --teal2: #4fd1c7;
+    --amber: #ed8936;
+    --amber2: #f6ad55;
+    --red: #fc8181;
+    --green: #68d391;
+    --purple: #b794f4;
+    --text: #e2e8f0;
+    --text2: #a0aec0;
+    --text3: #718096;
+    --rain: #4299e1;
+    --storm: #b794f4;
+    --accent: #00d4ff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    max-width: 430px;
+    margin: 0 auto;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* Header */
+  .header {
+    background: linear-gradient(180deg, #0d1b2e 0%, var(--bg) 100%);
+    padding: 48px 20px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 1px solid var(--border);
+  }
+  .header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .app-name {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .header-icons { display: flex; gap: 14px; }
+  .icon-btn {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: var(--text2); font-size: 16px;
+    transition: all 0.2s;
+  }
+  .icon-btn:hover { background: var(--card2); border-color: var(--border2); }
+
+  /* Search */
+  .search-bar {
+    display: flex; gap: 8px; align-items: center;
+  }
+  .search-wrap {
+    flex: 1;
+    position: relative;
+  }
+  .search-wrap svg {
+    position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+    color: var(--text3);
+  }
+  .search-input {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 11px 12px 11px 38px;
+    color: var(--text);
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .search-input:focus { border-color: var(--blue); }
+  .search-input::placeholder { color: var(--text3); }
+  .search-btn {
+    background: var(--blue);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 11px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s;
+  }
+  .search-btn:hover { background: var(--blue2); }
+
+  /* Main scroll area */
+  .scroll-area { padding: 0 0 90px; }
+
+  /* Hero weather card */
+  .hero-card {
+    margin: 16px 20px;
+    background: linear-gradient(135deg, #0d2444 0%, #1a1040 50%, #0d2444 100%);
+    border-radius: 20px;
+    border: 1px solid var(--border2);
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-card::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 160px; height: 160px;
+    background: radial-gradient(circle, rgba(66,153,225,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .location-row {
+    display: flex; align-items: center; gap: 6px;
+    margin-bottom: 4px;
+  }
+  .location-name {
+    font-size: 18px; font-weight: 600; color: var(--text);
+  }
+  .location-state { font-size: 14px; color: var(--text2); }
+  .last-updated { font-size: 12px; color: var(--text3); margin-bottom: 16px; }
+  .temp-row {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .temp-big {
+    font-size: 72px; font-weight: 300; color: var(--text);
+    line-height: 1; letter-spacing: -3px;
+  }
+  .temp-big sup { font-size: 28px; font-weight: 400; vertical-align: super; }
+  .weather-icon-big { font-size: 64px; line-height: 1; }
+  .condition-text {
+    font-size: 18px; color: var(--blue3); font-weight: 500;
+    margin-bottom: 4px;
+  }
+  .feels-like { font-size: 13px; color: var(--text3); margin-bottom: 20px; }
+
+  /* Monsoon badge */
+  .monsoon-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(178,75,243,0.15);
+    border: 1px solid rgba(178,75,243,0.4);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #d6bcfa;
+    margin-bottom: 20px;
+  }
+  .monsoon-badge .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #b794f4;
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  /* Quick stats grid */
+  .quick-stats {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 8px; margin-top: 16px;
+  }
+  .stat-pill {
+    background: rgba(255,255,255,0.06);
+    border-radius: 10px;
+    padding: 10px 12px;
+    display: flex; align-items: center; gap: 8px;
+    cursor: pointer; transition: background 0.2s;
+  }
+  .stat-pill:hover { background: rgba(255,255,255,0.1); }
+  .stat-pill svg { flex-shrink: 0; }
+  .stat-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; }
+  .stat-value { font-size: 15px; font-weight: 600; color: var(--text); }
+
+  /* Section header */
+  .section-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px 10px;
+  }
+  .section-title {
+    font-size: 13px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--text2);
+  }
+  .section-link {
+    font-size: 12px; color: var(--blue); cursor: pointer;
+    text-decoration: none;
+  }
+
+  /* Hourly forecast */
+  .hourly-scroll {
+    display: flex; gap: 10px;
+    overflow-x: auto; padding: 0 20px 4px;
+    scrollbar-width: none;
+  }
+  .hourly-scroll::-webkit-scrollbar { display: none; }
+  .hour-card {
+    flex-shrink: 0;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 12px 14px;
+    text-align: center;
+    min-width: 68px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .hour-card:hover, .hour-card.active {
+    background: var(--card2);
+    border-color: var(--blue);
+  }
+  .hour-card.active { border-color: var(--blue); }
+  .hour-time { font-size: 11px; color: var(--text3); margin-bottom: 6px; }
+  .hour-icon { font-size: 22px; margin-bottom: 6px; }
+  .hour-temp { font-size: 15px; font-weight: 600; }
+  .hour-rain { font-size: 11px; color: var(--blue2); margin-top: 4px; }
+
+  /* 10-day forecast */
+  .forecast-list { padding: 0 20px; display: flex; flex-direction: column; gap: 8px; }
+  .forecast-row {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 16px;
+    display: flex; align-items: center; gap: 12px;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .forecast-row:hover { background: var(--card2); border-color: var(--border2); }
+  .forecast-day { font-size: 14px; font-weight: 600; width: 36px; flex-shrink: 0; }
+  .forecast-icon { font-size: 24px; flex-shrink: 0; }
+  .forecast-desc { flex: 1; font-size: 13px; color: var(--text2); }
+  .forecast-rain-bar {
+    display: flex; align-items: center; gap: 6px; flex-shrink: 0;
+  }
+  .rain-pct { font-size: 12px; color: var(--blue2); width: 28px; text-align: right; }
+  .rain-bar-bg {
+    width: 40px; height: 4px;
+    background: rgba(66,153,225,0.15);
+    border-radius: 2px; overflow: hidden;
+  }
+  .rain-bar-fill { height: 100%; background: var(--blue); border-radius: 2px; }
+  .forecast-temps {
+    display: flex; gap: 6px; align-items: center;
+    flex-shrink: 0; min-width: 56px; justify-content: flex-end;
+  }
+  .temp-hi { font-size: 14px; font-weight: 600; }
+  .temp-lo { font-size: 14px; color: var(--text3); }
+
+  /* Detail panels */
+  .detail-grid {
+    padding: 0 20px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .detail-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .detail-card:hover { background: var(--card2); border-color: var(--border2); }
+  .detail-card.full-width { grid-column: 1 / -1; }
+  .detail-card-label {
+    font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--text3);
+    margin-bottom: 8px; font-weight: 600;
+  }
+  .detail-card-value {
+    font-size: 26px; font-weight: 300;
+    color: var(--text); line-height: 1;
+    margin-bottom: 4px;
+  }
+  .detail-card-unit { font-size: 13px; color: var(--text2); }
+  .detail-card-sub { font-size: 12px; color: var(--text3); margin-top: 6px; }
+  .detail-icon {
+    position: absolute; right: 12px; top: 12px;
+    font-size: 24px; opacity: 0.4;
+  }
+
+  /* Radar map */
+  .radar-section { margin: 0 20px; }
+  .radar-container {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
+  }
+  .radar-canvas {
+    width: 100%; display: block;
+    background: #050d1a;
+  }
+  .radar-overlay {
+    position: absolute;
+    top: 10px; left: 10px;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .radar-btn {
+    background: rgba(10,20,40,0.85);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 12px; color: var(--text);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .radar-btn:hover, .radar-btn.active { background: rgba(66,153,225,0.2); border-color: var(--blue); }
+  .radar-legend {
+    position: absolute; bottom: 10px; right: 10px;
+    background: rgba(10,20,40,0.85);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 11px;
+  }
+  .legend-row { display: flex; align-items: center; gap: 6px; margin: 2px 0; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .radar-controls {
+    display: flex; gap: 8px; padding: 10px;
+    overflow-x: auto; scrollbar-width: none;
+  }
+  .radar-controls::-webkit-scrollbar { display: none; }
+
+  /* Alerts banner */
+  .alert-banner {
+    margin: 0 20px;
+    background: linear-gradient(135deg, rgba(252,129,129,0.15), rgba(246,173,85,0.1));
+    border: 1px solid rgba(252,129,129,0.4);
+    border-radius: 14px;
+    padding: 14px 16px;
+    display: flex; gap: 12px; align-items: flex-start;
+    cursor: pointer;
+  }
+  .alert-icon { font-size: 22px; flex-shrink: 0; }
+  .alert-title { font-size: 14px; font-weight: 700; color: var(--red); margin-bottom: 2px; }
+  .alert-text { font-size: 13px; color: var(--text2); line-height: 1.4; }
+  .alert-time { font-size: 11px; color: var(--text3); margin-top: 4px; }
+
+  /* Monsoon tracker gauge */
+  .monsoon-tracker {
+    margin: 0 20px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+  }
+  .gauge-wrap { position: relative; width: 100%; }
+  .gauge-svg { width: 100%; display: block; }
+  .gauge-labels {
+    display: flex; justify-content: space-between;
+    font-size: 11px; color: var(--text3);
+    margin-top: 8px; padding: 0 4px;
+  }
+  .monsoon-stats {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 8px; margin-top: 16px;
+  }
+  .msn-stat {
+    text-align: center;
+    background: rgba(255,255,255,0.04);
+    border-radius: 10px;
+    padding: 10px 8px;
+  }
+  .msn-stat-val { font-size: 18px; font-weight: 600; margin-bottom: 2px; }
+  .msn-stat-lbl { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; }
+
+  /* Tab bar */
+  .tabbar {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 430px;
+    background: rgba(10,15,30,0.95);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid var(--border);
+    display: flex;
+    padding: 8px 0 20px;
+    z-index: 200;
+  }
+  .tab-item {
+    flex: 1;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    cursor: pointer; padding: 6px 0;
+    color: var(--text3); font-size: 10px;
+    transition: color 0.2s;
+  }
+  .tab-item svg { transition: transform 0.2s; }
+  .tab-item.active { color: var(--blue); }
+  .tab-item.active svg { transform: scale(1.1); }
+  .tab-item span { font-size: 10px; font-weight: 500; }
+
+  /* Modal overlay */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 300; align-items: flex-end;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-sheet {
+    background: var(--bg2);
+    border-radius: 24px 24px 0 0;
+    border-top: 1px solid var(--border2);
+    width: 100%; max-width: 430px; margin: 0 auto;
+    padding: 24px 24px 40px;
+    max-height: 85vh;
+    overflow-y: auto;
+    animation: slideUp 0.3s ease;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+  .modal-handle {
+    width: 40px; height: 4px;
+    background: var(--text3); border-radius: 2px;
+    margin: 0 auto 20px;
+  }
+  .modal-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .modal-sub { font-size: 13px; color: var(--text3); margin-bottom: 20px; }
+  .modal-close {
+    position: absolute; top: 20px; right: 20px;
+    width: 32px; height: 32px;
+    background: var(--card2); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 18px; color: var(--text2);
+    border: none;
+  }
+  .detail-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .detail-row:last-child { border-bottom: none; }
+  .detail-row-label { font-size: 14px; color: var(--text2); display: flex; align-items: center; gap: 8px; }
+  .detail-row-value { font-size: 14px; font-weight: 600; }
+  .progress-bar-wrap { margin-top: 4px; }
+  .progress-bg {
+    width: 100%; height: 6px;
+    background: rgba(255,255,255,0.08); border-radius: 3px; overflow: hidden;
+  }
+  .progress-fill { height: 100%; border-radius: 3px; transition: width 0.5s; }
+
+  /* Chart area in modal */
+  .mini-chart { width: 100%; height: 120px; position: relative; margin: 12px 0; }
+  .mini-chart canvas { width: 100% !important; height: 100% !important; }
+
+  /* Loading state */
+  .loading-spinner {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(10,15,30,0.8);
+    z-index: 500;
+    align-items: center; justify-content: center;
+    flex-direction: column; gap: 16px;
+  }
+  .loading-spinner.show { display: flex; }
+  .spinner {
+    width: 48px; height: 48px;
+    border: 3px solid var(--border);
+    border-top-color: var(--blue);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { font-size: 14px; color: var(--text2); }
+
+  /* Utility */
+  .color-rain { color: var(--blue2); }
+  .color-storm { color: var(--purple); }
+  .color-wind { color: var(--teal2); }
+  .color-amber { color: var(--amber2); }
+  .color-red { color: var(--red); }
+  .color-green { color: var(--green); }
+  .mt8 { margin-top: 8px; }
+  .mt16 { margin-top: 16px; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<!-- Loading -->
+<div class="loading-spinner" id="loader">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loadingText">Fetching weather data…</div>
+</div>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-top">
+    <div class="app-name">🌧 MonsoonWatch</div>
+    <div class="header-icons">
+      <div class="icon-btn" onclick="showModal('alertsModal')" title="Alerts">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      </div>
+      <div class="icon-btn" onclick="showModal('settingsModal')" title="Settings">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </div>
+    </div>
+  </div>
+  <div class="search-bar">
+    <div class="search-wrap">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input class="search-input" id="searchInput" type="text" placeholder="Search city or ZIP code…" value="Phoenix, AZ" onkeydown="if(event.key==='Enter')searchWeather()">
+    </div>
+    <button class="search-btn" onclick="searchWeather()">Search</button>
+  </div>
+</div>
+
+<!-- Scroll content -->
+<div class="scroll-area" id="mainContent">
+
+  <!-- Alert banner -->
+  <div style="margin: 14px 20px 0;" id="alertBanner">
+    <div class="alert-banner" onclick="showModal('alertsModal')">
+      <div class="alert-icon">⚠️</div>
+      <div>
+        <div class="alert-title">Monsoon Storm Warning</div>
+        <div class="alert-text">Strong thunderstorms with gusty winds up to 55 mph and heavy rain expected</div>
+        <div class="alert-time">Active until 9:00 PM MST · Maricopa County</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hero card -->
+  <div class="hero-card" id="heroCard">
+    <div class="location-row">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--blue2)"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      <span class="location-name" id="locName">Phoenix</span>
+      <span class="location-state" id="locState">, AZ</span>
+    </div>
+    <div class="last-updated" id="lastUpdated">Updated just now · 103°F feels like 109°F</div>
+    <div class="temp-row">
+      <div>
+        <div class="temp-big" id="tempBig">103<sup>°</sup></div>
+        <div class="condition-text" id="condText">Thunderstorms</div>
+        <div class="feels-like" id="feelsLike">Feels like 109° · Humidity 62%</div>
+      </div>
+      <div class="weather-icon-big" id="mainIcon">⛈️</div>
+    </div>
+    <div class="monsoon-badge" id="monsoonBadge">
+      <div class="dot"></div>
+      <span>Monsoon Season Active</span>
+    </div>
+    <div class="quick-stats">
+      <div class="stat-pill" onclick="showModal('rainModal')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#63b3ed" stroke-width="2"><path d="M12 2v6m0 0C10 4 6 8 6 13a6 6 0 0 0 12 0c0-5-4-9-6-5z"/></svg>
+        <div>
+          <div class="stat-label">Rain Chance</div>
+          <div class="stat-value color-rain" id="rainChance">85%</div>
+        </div>
+      </div>
+      <div class="stat-pill" onclick="showModal('windModal')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4fd1c7" stroke-width="2"><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/></svg>
+        <div>
+          <div class="stat-label">Wind</div>
+          <div class="stat-value color-wind" id="windStat">SW 22 mph</div>
+        </div>
+      </div>
+      <div class="stat-pill" onclick="showModal('lightningModal')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f6ad55" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        <div>
+          <div class="stat-label">Lightning</div>
+          <div class="stat-value color-amber" id="lightningStat">High</div>
+        </div>
+      </div>
+      <div class="stat-pill" onclick="showModal('pressureModal')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#b794f4" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+        <div>
+          <div class="stat-label">Pressure</div>
+          <div class="stat-value color-storm" id="pressureStat">29.72 inHg</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hourly forecast -->
+  <div class="section-head">
+    <span class="section-title">Hourly Forecast</span>
+    <span class="section-link">24 hours →</span>
+  </div>
+  <div class="hourly-scroll" id="hourlyScroll"></div>
+
+  <!-- Weather Radar -->
+  <div class="section-head mt8">
+    <span class="section-title">Live Radar</span>
+    <span class="section-link" onclick="showModal('radarModal')">Full screen</span>
+  </div>
+  <div class="radar-section">
+    <div class="radar-container">
+      <canvas class="radar-canvas" id="radarCanvas" height="220"></canvas>
+      <div class="radar-overlay">
+        <div class="radar-btn active" id="radarRain" onclick="setRadarMode('rain',this)">🌧 Rain</div>
+        <div class="radar-btn" id="radarWind" onclick="setRadarMode('wind',this)">💨 Wind</div>
+        <div class="radar-btn" id="radarStorm" onclick="setRadarMode('storm',this)">⛈ Storm</div>
+      </div>
+      <div class="radar-legend">
+        <div class="legend-row"><div class="legend-dot" style="background:#3b82f6"></div><span style="color:var(--text2);font-size:10px">Light rain</span></div>
+        <div class="legend-row"><div class="legend-dot" style="background:#1d4ed8"></div><span style="color:var(--text2);font-size:10px">Heavy rain</span></div>
+        <div class="legend-row"><div class="legend-dot" style="background:#7c3aed"></div><span style="color:var(--text2);font-size:10px">Storm</span></div>
+        <div class="legend-row"><div class="legend-dot" style="background:#dc2626"></div><span style="color:var(--text2);font-size:10px">Severe</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 10-Day Forecast -->
+  <div class="section-head mt16">
+    <span class="section-title">10-Day Forecast</span>
+    <span class="section-link">Detailed view</span>
+  </div>
+  <div class="forecast-list" id="forecastList"></div>
+
+  <!-- Monsoon Tracker -->
+  <div class="section-head mt16">
+    <span class="section-title">Monsoon Tracker</span>
+    <span class="section-link" onclick="showModal('monsoonModal')">History</span>
+  </div>
+  <div class="monsoon-tracker">
+    <canvas id="gaugeCanvas" width="390" height="120" style="width:100%;display:block;"></canvas>
+    <div class="gauge-labels">
+      <span>0 in</span><span>1 in</span><span>2 in</span><span>3 in</span><span>4 in</span><span>Avg 5.2 in</span>
+    </div>
+    <div class="monsoon-stats">
+      <div class="msn-stat">
+        <div class="msn-stat-val color-rain">2.4"</div>
+        <div class="msn-stat-lbl">Month Total</div>
+      </div>
+      <div class="msn-stat">
+        <div class="msn-stat-val color-amber">14</div>
+        <div class="msn-stat-lbl">Storm Days</div>
+      </div>
+      <div class="msn-stat">
+        <div class="msn-stat-val color-storm">46%</div>
+        <div class="msn-stat-lbl">Season Avg</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detail cards -->
+  <div class="section-head mt16">
+    <span class="section-title">Weather Details</span>
+  </div>
+  <div class="detail-grid">
+    <div class="detail-card" onclick="showModal('rainModal')">
+      <div class="detail-card-label">Rain</div>
+      <div class="detail-card-value color-rain">0.82"</div>
+      <div class="detail-card-unit">today so far</div>
+      <div class="detail-card-sub">2.4" this week</div>
+      <div class="detail-icon">🌧</div>
+    </div>
+    <div class="detail-card" onclick="showModal('dewModal')">
+      <div class="detail-card-label">Dew Point</div>
+      <div class="detail-card-value">64°</div>
+      <div class="detail-card-unit">F · Very humid</div>
+      <div class="detail-card-sub">Tropical feel above 65°</div>
+      <div class="detail-icon">💧</div>
+    </div>
+    <div class="detail-card" onclick="showModal('windModal')">
+      <div class="detail-card-label">Wind Speed</div>
+      <div class="detail-card-value color-wind">22</div>
+      <div class="detail-card-unit">mph SW · Gusts 41</div>
+      <div class="detail-card-sub">Haboob risk moderate</div>
+      <div class="detail-icon">💨</div>
+    </div>
+    <div class="detail-card" onclick="showModal('lightningModal')">
+      <div class="detail-card-label">Lightning</div>
+      <div class="detail-card-value color-amber">8 mi</div>
+      <div class="detail-card-unit">nearest strike</div>
+      <div class="detail-card-sub">47 strikes last hour</div>
+      <div class="detail-icon">⚡</div>
+    </div>
+    <div class="detail-card" onclick="showModal('pressureModal')">
+      <div class="detail-card-label">Pressure</div>
+      <div class="detail-card-value">29.72</div>
+      <div class="detail-card-unit">inHg · Falling</div>
+      <div class="detail-card-sub">Storm approaching</div>
+      <div class="detail-icon">🌀</div>
+    </div>
+    <div class="detail-card" onclick="showModal('visModal')">
+      <div class="detail-card-label">Visibility</div>
+      <div class="detail-card-value">3.5</div>
+      <div class="detail-card-unit">miles · Reduced</div>
+      <div class="detail-card-sub">Dust & heavy rain</div>
+      <div class="detail-icon">👁</div>
+    </div>
+    <div class="detail-card full-width" onclick="showModal('uvModal')">
+      <div class="detail-card-label">UV Index + Solar</div>
+      <div style="display:flex;gap:20px;align-items:center">
+        <div>
+          <div class="detail-card-value color-amber">7</div>
+          <div class="detail-card-unit">High · Wear SPF</div>
+        </div>
+        <div style="flex:1">
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-bottom:4px"><span>5:49 AM ☀️</span><span>🌅 7:52 PM</span></div>
+          <div class="progress-bg"><div class="progress-fill" style="width:72%;background:linear-gradient(90deg,#f6ad55,#fc8181)"></div></div>
+          <div style="font-size:11px;color:var(--text3);margin-top:4px">Peak UV 11 AM – 2 PM</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end scroll-area -->
+
+<!-- Tab Bar -->
+<div class="tabbar">
+  <div class="tab-item active" onclick="setTab(this,'home')">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span>Today</span>
+  </div>
+  <div class="tab-item" onclick="setTab(this,'forecast')">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    <span>Forecast</span>
+  </div>
+  <div class="tab-item" onclick="setTab(this,'radar')">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/></svg>
+    <span>Radar</span>
+  </div>
+  <div class="tab-item" onclick="setTab(this,'alerts')">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    <span>Alerts</span>
+  </div>
+  <div class="tab-item" onclick="setTab(this,'map')">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+    <span>Map</span>
+  </div>
+</div>
+
+<!-- MODALS -->
+
+<!-- Rain Detail Modal -->
+<div class="modal-overlay" id="rainModal" onclick="closeModal(event,this)">
+  <div class="modal-sheet" style="position:relative">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="closeModalById('rainModal')">×</button>
+    <div class="modal-title">🌧 Rainfall Details</div>
+    <div class="modal-sub" id="rainModalSub">Phoenix, AZ · Today</div>
+    <div class="detail-row"><span class="detail-row-label">Current intensity</span><span class="detail-row-value color-rain">Moderate 0.3 in/hr</span></div>
+    <div class="detail-row"><span class="detail-row-label">Today's total</span><span class="detail-row-value">0.82 inches</span></div>
+    <div class="detail-row"><span class="detail-row-label">Probability</span><span class="detail-row-value color-rain">85%</span></div>
+    <div class="detail-row"><span class="detail-row-label">Weekly total</span><span class="detail-row-value">2.4 inches</span></div>
+    <div class="detail-row"><span class="detail-row-label">Monthly total</span><span class="detail-row-value">3.1 inches</span></div>
+    <div class="detail-row"><span class="detail-row-label">Monthly average</span><span class="detail-row-value">2.8 inches</span></div>
+    <div class="detail-row"><span class="detail-row-label">Season total (Jul–Sep)</span><span class="detail-row-value color-green">4.7 inches</span></div>
+    <div class="detail-row"><span class="detail-row-label">Flash flood risk</span><span class="detail-row-value color-amber">Moderate</span></div>
+    <div class="mt16" style="font-size:13px;color:var(--text3);line-height:1.6">⚠️ Heavy rain falling on dry, hard desert soil may cause localized ponding and flooding in low-lying areas. Avoid washes and dips in roadways.</div>
+  </div>
+</div>
+
+<!-- Wind Modal -->
+<div class="modal-overlay" id="windModal" onclick="closeModal(event,this)">
+  <div class="modal-sheet" style="position:relative">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="closeModalById('windModal')">×</button>
+    <div class="modal-title">💨 Wind Conditions</div>
+    <div class="modal-sub">Phoenix, AZ · Current conditions</div>
+    <div class="detail-row"><span class="detail-row-label">Speed</span><span class="detail-row-value color-wind">22 mph</span></div>
+    <div class="detail-row"><span class="detail-row-label">Gust speed</span><span class="detail-row-value color-red">41 mph</span></div>
+    <div class="detail-row"><span class="detail-row-label">Direction</span><span class="detail-row-value">SW (225°)</span></div>
+    <div class="detail-row"><span class="detail-row-label">Max gust today</span><span class="detail-row-value">55 mph</span></div>
+    <div class="detail-row"><span class="detail-row-label">Haboob risk</span><span class="detail-row-value color-amber">Moderate</span></div>
+    <div class="detail-row"><span class="detail-row-label">Wind chill factor</span><span class="detail-row-value">—</span></div>
+    <div class="detail-row"><span class="detail-row-label">Beaufort scale</span><span class="detail-row-value">6 — Strong breeze</span></div>
+    <!-- Wind compass -->
+    <canvas id="windCompass" width="160" height="160" style="display:block;margin:16px auto 0;"></canvas>
+    <div style="font-size:13px;color:var(--text3);text-align:center;margin-top:8px">Wind from Southwest · 225°</div>
+  </div>
+</div>
+
+<!-- Lightning Modal -->
+<div class="modal-overlay" id="lightningModal" onclick="closeModal(event,this)">
+  <div class="modal-sheet" style="position:relative">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="closeModalById('lightningModal')">×</button>
+    <div class="modal-title">⚡ Lightning Tracker</div>
+    <div class="modal-sub">Phoenix, AZ · Live data</div>
+    <div class="detail-row"><span class="detail-row-label">Nearest strike</span><span class="detail-row-value color-amber">8 miles</span></div>
+    <div class="detail-row"><span class="detail-row-label">Strikes last 15 min</span><span class="detail-row-value">12</span></div>
+    <div class="detail-row"><span class="detail-row-label">Strikes last hour</span><span class="detail-row-value color-red">47</span></div>
+    <div class="detail-row"><span class="detail-row-label">Peak activity time</span><span class="detail-row-value">4:30 – 6:00 PM</span></div>
+    <div class="detail-row"><span class="detail-row-label">Storm moving</span><span class="detail-row-value color-amber">Toward you NE</span></div>
+    <div class="detail-row"><span class="detail-row-label">Safety threshold</span><span class="detail-row-value color-red">Seek shelter now</span></div>
+    <div class="mt16" style="background:rgba(252,129,129,0.1);border:1px solid rgba(252,129,129,0.3);border-radius:10px;padding:12px;font-size:13px;color:var(--text2);line-height:1.6">
+      ⚡ Lightning within 10 miles: <strong style="color:var(--red)">Seek shelter immediately.</strong> If you can hear thunder, you're in range. Wait 30 minutes after the last lightning strike before resuming outdoor activities.
+    </div>
+  </div>
+</div>
+
+<!-- Pressure Modal -->
+<div class="modal-overlay" id="pressureModal" onclick="closeModal(event,this)">
+  <div class="modal-sheet" style="position:relative">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="closeModalById('pressureModal')">×</button>
+    <div class="modal-title">🌀 Pressure & Stability</div>
+    <div class="modal-sub">Phoenix, AZ · Atmospheric data</div>
+    <div class="detail-row"><span class="detail-row-label">Sea-level pressure</span><span class="detail-row-value">29.72 inHg</span></div>
+    <div class="detail-row"><span class="detail-row-label">3-hour change</span><span class="detail-row-value color-red">▼ 0.08 inHg (Falling)</span></div>
+    <div class="detail-row"><span class="detail-row-label">Station pressure</span><span class="detail-row-value">24.31 inHg</span></div>
+    <div class="detail-row"><span class="detail-row-label">Elevation</span><span class="detail-row-value">1,086 ft</span></div>
+    <div class="detail-row"><span class="detail-row-label">Monsoon moisture</span><span class="detail-row-value color-storm">High (Gulf surge)</span></div>
+    <div class="detail-row"><span class="detail-row-label">CAPE index</span><span class="detail-row-value color-red">2,400 J/kg</span></div>
+    <div class="detail-row"><span class="detail-row-label">Instability</span><span class="detail-row-value color-red">Extreme</span></div>
+    <div class="mt16" style="font-size:13px;color:var(--text3);line-height:1.6">A CAPE value above 2,000 J/kg indicates extreme atmospheric instability — conditions prime for severe thunderstorm development during monsoon surges.</div>
+  </div>
+</div>
+
+<!-- Dew Point Modal -->
+<div class="modal-overlay" id="dewModal" onclick="closeModal(event,this)">
+  <div class="modal-sheet" style="position:relative">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="closeModalById('dewModal')">×</button>
+    <div class="modal-title">💧 Humidity & Dew Point</div>
+    <div class="modal-sub">Phoenix, AZ · Moisture analysis</div>
+    <div class="detail-row"><span class="detail-row-label">Dew point</span><span class="detail-row-value color-rain">64°F</span></div>
+    <div class="detail-row"><span class="detail-row-label">Relative humidity</span><span class="detail-row-value">62%</span></div>
+    <div class="detail-row"><span class="detail-row-label">Comfort level</span><span class="detail-row-value color-red">Very humid</span></div>
+    <div class="detail-row"><span class="detail-row-label">Heat index</span><span class="detail-row-value color-red">109°F</span></div>
+    <div class="detail-row"><span class="detail-row-label">Wet bulb temp</span><span class="detail-row-value">78°F</span></div>
+    <div class="detail-row"><span class="detail-row-label">Monsoon moisture</span><span class="detail-row-value color-storm">Gulf surge active</span></div>
+    <div class="mt16">
+      <div style="font-size:12px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.06em">Dew point comfort scale</div>
+      <div style="display:flex;gap:0;border-radius:8px;overflow:hidden;font-size:10px">
+        <div style="flex:1;background:#1a3a2a;padding:6px 4px;text-align:center;color:#68d391">≤55°<br>Dry</div>
+        <div style="flex:1;background:#1a3020;padding:6px 4px;text-align:center;color:#68d391">56-60°<br>OK</div>
+        <div style="flex:1;background:#2d2010;padding:6px 4px;text-align:center;color:#f6ad55">61-65°<br>Humid</div>
+        <div style="flex:1;background:#3d1c1c;padding:6px 4px;text-align:center;color:#fc8181;font-weight:700;outline:2px solid #fc8181">66-70°<br>Very</div>
+        <div style="flex:1;background:#3d1010;padding:6px 4px;text-align:center;color:#fc8181">70°+<br>Oppressive</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Visibility Modal -->
+<div class="modal-overlay" id="visModal" onclick="closeModal(event,this)">
+  <div class="modal-sheet" style="position:relative">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="closeModalById('visModal')">×</button>
+    <div class="modal-title">👁 Visibility Conditions</div>
+    <div class="modal-sub">Phoenix, AZ · Visibility data</div>
+    <div class="detail-row"><span class="detail-row-label">Current</span><span class="detail-row-value color-amber">3.5 miles</span></div>
+    <div class="detail-row"><span class="detail-row-label">Reduced by</span><span class="detail-row-value">Blowing dust & rain</span></div>
+    <div class="detail-row"><span class="detail-row-label">Minimum today</span><span class="detail-row-value color-red">0.25 miles (2:15 PM)</span></div>
+    <div class="detail-row"><span class="detail-row-label">Cloud ceiling</span><span class="detail-row-value">1,200 ft AGL</span></div>
+    <div class="detail-row"><span class="detail-row-label">Airport IFR status</span><span class="detail-row-value color-red">IFR conditions</span></div>
+    <div class="detail-row"><span class="detail-row-label">Driving advisory</span><span class="detail-row-value color-amber">Use caution</span></div>
+  </div>
+</div>
+
+<!-- UV Modal -->
+<div class="modal-overlay" id="uvModal" onclick="closeModal(event,this)">
+  <div class="modal-sheet" style="position:relative">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="closeModalById('uvModal')">×</button>
+    <div class="modal-title">☀️ UV & Solar Data</div>
+    <div class="modal-sub">Phoenix, AZ · Solar analysis</div>
+    <div class="detail-row"><span class="detail-row-label">UV Index</span><span class="detail-row-value color-amber">7 — High</span></div>
+    <div class="detail-row"><span class="detail-row-label">Peak UV today</span><span class="detail-row-value color-red">10 (11 AM – 2 PM)</span></div>
+    <div class="detail-row"><span class="detail-row-label">Sunburn time</span><span class="detail-row-value color-amber">25 minutes</span></div>
+    <div class="detail-row"><span class="detail-row-label">Sunrise</span><span class="detail-row-value">5:49 AM</span></div>
+    <div class="detail-row"><span class="detail-row-label">Sunset</span><span class="detail-row-value">7:52 PM</span></div>
+    <div class="detail-row"><span class="detail-row-label">Day length</span><span class="detail-row-value">14h 3m</span></div>
+    <div class="detail-row"><span class="detail-row-label">Cloud cover</span><span class="detail-row-value">72% (blocking UV)</span></div>
+  </div>
+</div>
+
+<!-- Monsoon history modal -->
+<div class="modal-overlay" id="monsoonModal" onclick="closeModal(event,this)">
+  <div class="modal-sheet" style="position:relative">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="closeModalById('monsoonModal')">×</button>
+    <div class="modal-title">🌧 Monsoon Season Tracker</div>
+    <div class="modal-sub" id="monsoonModalSub">Phoenix, AZ · 2025 Season (Jun 15 – Sep 30)</div>
+    <div class="detail-row"><span class="detail-row-label">Season start</span><span class="detail-row-value">June 15</span></div>
+    <div class="detail-row"><span class="detail-row-label">Season rainfall</span><span class="detail-row-value color-rain">4.7 inches</span></div>
+    <div class="detail-row"><span class="detail-row-label">Season average</span><span class="detail-row-value">5.2 inches</span></div>
+    <div class="detail-row"><span class="detail-row-label">% of average</span><span class="detail-row-value color-amber">90%</span></div>
+    <div class="detail-row"><span class="detail-row-label">Storm events</span><span class="detail-row-value">14</span></div>
+    <div class="detail-row"><span class="detail-row-label">Wettest day</span><span class="detail-row-value">Aug 2 (1.3 inches)</span></div>
+    <div class="detail-row"><span class="detail-row-label">Max wind gust</span><span class="detail-row-value">68 mph (Jul 28)</span></div>
+    <div class="detail-row"><span class="detail-row-label">Days with lightning</span><span class="detail-row-value">22</span></div>
+    <div style="height:140px;position:relative;margin-top:16px">
+      <canvas id="monsoonChart" role="img" aria-label="Monthly monsoon rainfall chart">Monthly rainfall data</canvas>
+    </div>
+  </div>
+</div>
+
+<!-- Alerts modal -->
+<div class="modal-overlay" id="alertsModal" onclick="closeModal(event,this)">
+  <div class="modal-sheet" style="position:relative">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="closeModalById('alertsModal')">×</button>
+    <div class="modal-title">⚠️ Active Weather Alerts</div>
+    <div class="modal-sub" id="alertsLocation">Phoenix Metro Area</div>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-top:4px" id="alertsList">
+      <div style="background:rgba(252,129,129,0.1);border:1px solid rgba(252,129,129,0.4);border-radius:12px;padding:14px">
+        <div style="font-size:13px;font-weight:700;color:var(--red);margin-bottom:4px">🔴 Monsoon Storm Warning</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.5">Strong thunderstorms with gusty winds up to 55 mph, dangerous lightning, and heavy rain of 1–2 inches in short periods. Flash flooding possible.</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:6px">Issued: 3:05 PM · Expires: 9:00 PM MST · Maricopa County</div>
+      </div>
+      <div style="background:rgba(246,173,85,0.1);border:1px solid rgba(246,173,85,0.4);border-radius:12px;padding:14px">
+        <div style="font-size:13px;font-weight:700;color:var(--amber2);margin-bottom:4px">🟡 Flash Flood Watch</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.5">Conditions favorable for flash flooding through this evening. Avoid washes and low-lying areas. Do not drive through flooded roadways.</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:6px">Issued: 1:30 PM · Expires: 11:00 PM MST</div>
+      </div>
+      <div style="background:rgba(183,148,244,0.1);border:1px solid rgba(183,148,244,0.3);border-radius:12px;padding:14px">
+        <div style="font-size:13px;font-weight:700;color:var(--purple);margin-bottom:4px">🟣 Dust Storm Advisory</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.5">Blowing dust possible with storm outflow winds. Visibility may drop below 1/4 mile. Pull over if visibility drops — do not stop on roadway.</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:6px">Issued: 2:45 PM · Expires: 8:00 PM MST</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Settings modal -->
+<div class="modal-overlay" id="settingsModal" onclick="closeModal(event,this)">
+  <div class="modal-sheet" style="position:relative">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="closeModalById('settingsModal')">×</button>
+    <div class="modal-title">⚙️ Settings</div>
+    <div class="modal-sub">MonsoonWatch preferences</div>
+    <div class="detail-row">
+      <span class="detail-row-label">Temperature unit</span>
+      <div style="display:flex;gap:8px">
+        <button onclick="setUnit('F',this)" style="background:var(--blue);color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:13px;cursor:pointer;font-weight:600" id="unitF">°F</button>
+        <button onclick="setUnit('C',this)" style="background:var(--card2);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:6px 14px;font-size:13px;cursor:pointer" id="unitC">°C</button>
+      </div>
+    </div>
+    <div class="detail-row">
+      <span class="detail-row-label">Notifications</span>
+      <div style="width:44px;height:24px;background:var(--blue);border-radius:12px;position:relative;cursor:pointer" onclick="toggleSwitch(this)">
+        <div style="width:20px;height:20px;background:#fff;border-radius:50%;position:absolute;top:2px;right:2px;transition:right 0.2s" class="sw-knob"></div>
+      </div>
+    </div>
+    <div class="detail-row">
+      <span class="detail-row-label">Storm alerts</span>
+      <div style="width:44px;height:24px;background:var(--blue);border-radius:12px;position:relative;cursor:pointer" onclick="toggleSwitch(this)">
+        <div style="width:20px;height:20px;background:#fff;border-radius:50%;position:absolute;top:2px;right:2px" class="sw-knob"></div>
+      </div>
+    </div>
+    <div class="detail-row">
+      <span class="detail-row-label">Lightning alerts</span>
+      <div style="width:44px;height:24px;background:var(--blue);border-radius:12px;position:relative;cursor:pointer" onclick="toggleSwitch(this)">
+        <div style="width:20px;height:20px;background:#fff;border-radius:50%;position:absolute;top:2px;right:2px" class="sw-knob"></div>
+      </div>
+    </div>
+    <div class="detail-row" style="border:none">
+      <span class="detail-row-label">Radar refresh rate</span>
+      <select style="background:var(--card2);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:13px;outline:none">
+        <option>5 minutes</option>
+        <option selected>10 minutes</option>
+        <option>15 minutes</option>
+      </select>
+    </div>
+    <div style="margin-top:20px;font-size:12px;color:var(--text3);text-align:center">MonsoonWatch v1.0.0 · Data: NWS, OpenWeather, TWC</div>
+  </div>
+</div>
+
+<!-- Radar fullscreen modal -->
+<div class="modal-overlay" id="radarModal" onclick="closeModal(event,this)">
+  <div class="modal-sheet" style="position:relative">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="closeModalById('radarModal')">×</button>
+    <div class="modal-title">📡 Live Radar</div>
+    <div class="modal-sub" id="radarModalSub">Phoenix, AZ Metro · Updating every 5 min</div>
+    <canvas id="radarCanvasBig" width="382" height="300" style="width:100%;display:block;background:#050d1a;border-radius:12px;margin-top:8px"></canvas>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+      <div class="radar-btn active" style="border-radius:8px;padding:7px 12px;font-size:12px;background:rgba(66,153,225,0.2);border:1px solid var(--blue)">🌧 Rain</div>
+      <div class="radar-btn" style="border-radius:8px;padding:7px 12px;font-size:12px">💨 Wind</div>
+      <div class="radar-btn" style="border-radius:8px;padding:7px 12px;font-size:12px">⛈ Storm</div>
+      <div class="radar-btn" style="border-radius:8px;padding:7px 12px;font-size:12px">🌪 Haboob</div>
+      <div class="radar-btn" style="border-radius:8px;padding:7px 12px;font-size:12px">⚡ Lightning</div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+// ─── Data ───────────────────────────────────────────────────────────────────
+const weatherDB = {
+  'Phoenix, AZ': { temp:103, feelsLike:109, humidity:62, condition:'Thunderstorms', icon:'⛈️', dewPoint:64, wind:'SW 22 mph', windDeg:225, windGust:41, rain:85, pressure:29.72, lightning:'High', monsoon:true, vis:3.5, uv:7, lo:87, hi:105 },
+  'Tucson, AZ': { temp:96, feelsLike:102, humidity:68, condition:'Heavy Rain', icon:'🌧️', dewPoint:66, wind:'SE 18 mph', windDeg:135, windGust:35, rain:90, pressure:29.65, lightning:'Extreme', monsoon:true, vis:2.0, uv:5, lo:80, hi:98 },
+  'Las Vegas, NV': { temp:108, feelsLike:108, humidity:18, condition:'Sunny', icon:'☀️', dewPoint:40, wind:'SW 12 mph', windDeg:210, windGust:22, rain:5, pressure:29.91, lightning:'Low', monsoon:false, vis:10.0, uv:11, lo:88, hi:110 },
+  'Miami, FL': { temp:89, feelsLike:99, humidity:78, condition:'Partly Cloudy', icon:'⛅', dewPoint:76, wind:'SE 14 mph', windDeg:135, windGust:20, rain:40, pressure:29.85, lightning:'Moderate', monsoon:false, vis:8.0, uv:8, lo:78, hi:91 },
+  'Houston, TX': { temp:94, feelsLike:105, humidity:72, condition:'Scattered Storms', icon:'⛈️', dewPoint:72, wind:'S 16 mph', windDeg:180, windGust:30, rain:60, pressure:29.78, lightning:'High', monsoon:false, vis:5.0, uv:6, lo:79, hi:96 },
+  'Denver, CO': { temp:82, feelsLike:80, humidity:35, condition:'Partly Cloudy', icon:'⛅', dewPoint:48, wind:'NW 10 mph', windDeg:315, windGust:18, rain:20, pressure:30.10, lightning:'Low', monsoon:false, vis:10.0, uv:9, lo:62, hi:85 },
+  'Seattle, WA': { temp:68, feelsLike:66, humidity:72, condition:'Cloudy', icon:'☁️', dewPoint:58, wind:'SW 8 mph', windDeg:210, windGust:15, rain:30, pressure:29.95, lightning:'Low', monsoon:false, vis:7.0, uv:3, lo:56, hi:70 },
+  'New York, NY': { temp:79, feelsLike:82, humidity:65, condition:'Mostly Sunny', icon:'🌤️', dewPoint:62, wind:'NE 11 mph', windDeg:45, windGust:18, rain:15, pressure:30.02, lightning:'Low', monsoon:false, vis:9.0, uv:7, lo:67, hi:82 },
+  'Chicago, IL': { temp:76, feelsLike:78, humidity:60, condition:'Partly Cloudy', icon:'⛅', dewPoint:60, wind:'W 14 mph', windDeg:270, windGust:22, rain:20, pressure:29.98, lightning:'Low', monsoon:false, vis:10.0, uv:6, lo:62, hi:78 },
+  'Los Angeles, CA': { temp:82, feelsLike:80, humidity:45, condition:'Mostly Sunny', icon:'🌤️', dewPoint:55, wind:'W 10 mph', windDeg:270, windGust:16, rain:5, pressure:29.95, lightning:'Low', monsoon:false, vis:10.0, uv:8, lo:66, hi:85 },
+};
+
+const hourlyData = [
+  {t:'Now',icon:'⛈️',temp:103,rain:'85%'},{t:'4 PM',icon:'⛈️',temp:102,rain:'90%'},
+  {t:'5 PM',icon:'🌧️',temp:100,rain:'80%'},{t:'6 PM',icon:'🌧️',temp:97,rain:'70%'},
+  {t:'7 PM',icon:'⛅',temp:94,rain:'40%'},{t:'8 PM',icon:'🌥️',temp:91,rain:'20%'},
+  {t:'9 PM',icon:'🌥️',temp:89,rain:'15%'},{t:'10 PM',icon:'☁️',temp:88,rain:'10%'},
+  {t:'11 PM',icon:'☁️',temp:87,rain:'10%'},{t:'12 AM',icon:'🌥️',temp:87,rain:'5%'},
+];
+const forecastData = [
+  {day:'Mon',icon:'⛈️',desc:'Severe Thunderstorms',rain:90,hi:105,lo:87},
+  {day:'Tue',icon:'🌧️',desc:'Heavy Rain',rain:75,hi:100,lo:84},
+  {day:'Wed',icon:'⛅',desc:'Partly Cloudy',rain:30,hi:103,lo:82},
+  {day:'Thu',icon:'⛈️',desc:'Afternoon Storms',rain:65,hi:104,lo:85},
+  {day:'Fri',icon:'🌤️',desc:'Mostly Sunny',rain:15,hi:106,lo:84},
+  {day:'Sat',icon:'🌧️',desc:'Scattered Showers',rain:50,hi:101,lo:83},
+  {day:'Sun',icon:'⛈️',desc:'Strong Thunderstorms',rain:80,hi:99,lo:82},
+  {day:'Mon',icon:'🌦️',desc:'Isolated Storms',rain:45,hi:102,lo:83},
+  {day:'Tue',icon:'⛅',desc:'Partly Cloudy',rain:20,hi:104,lo:82},
+  {day:'Wed',icon:'🌤️',desc:'Mostly Sunny',rain:10,hi:107,lo:84},
+];
+
+let currentCity = 'Phoenix, AZ';
+let tempUnit = 'F';
+
+// ─── Helpers ────────────────────────────────────────────────────────────────
+function toC(f) { return Math.round((f-32)*5/9); }
+function dispTemp(f) { return tempUnit==='F' ? f+'°F' : toC(f)+'°C'; }
+
+// ─── UI Rendering ─────────────────────────────────────────────────────────
+function renderHero(city) {
+  const d = weatherDB[city] || weatherDB['Phoenix, AZ'];
+  const parts = city.split(', ');
+  document.getElementById('locName').textContent = parts[0];
+  document.getElementById('locState').textContent = parts[1] ? ', '+parts[1] : '';
+  document.getElementById('lastUpdated').textContent =
+    'Updated just now · '+dispTemp(d.temp)+' feels like '+dispTemp(d.feelsLike);
+  document.getElementById('tempBig').innerHTML = (tempUnit==='F'?d.temp:toC(d.temp))+'<sup>°</sup>';
+  document.getElementById('condText').textContent = d.condition;
+  document.getElementById('feelsLike').textContent =
+    'Feels like '+dispTemp(d.feelsLike)+' · Humidity '+d.humidity+'%';
+  document.getElementById('mainIcon').textContent = d.icon;
+  document.getElementById('rainChance').textContent = d.rain+'%';
+  document.getElementById('windStat').textContent = d.wind;
+  document.getElementById('lightningStat').textContent = d.lightning;
+  document.getElementById('pressureStat').textContent = d.pressure+' inHg';
+  const mb = document.getElementById('monsoonBadge');
+  mb.style.display = d.monsoon ? 'inline-flex' : 'none';
+  document.getElementById('rainModalSub').textContent = city+' · Today';
+  document.getElementById('monsoonModalSub').textContent = city+' · 2025 Season (Jun 15 – Sep 30)';
+  document.getElementById('alertsLocation').textContent = city+' Metro Area';
+  document.getElementById('radarModalSub').textContent = city+' Metro · Updating every 5 min';
+}
+
+function renderHourly() {
+  const container = document.getElementById('hourlyScroll');
+  container.innerHTML = hourlyData.map((h,i) => `
+    <div class="hour-card${i===0?' active':''}" onclick="selectHour(this)">
+      <div class="hour-time">${h.t}</div>
+      <div class="hour-icon">${h.icon}</div>
+      <div class="hour-temp">${h.temp}°</div>
+      <div class="hour-rain">${h.rain}</div>
+    </div>`).join('');
+}
+
+function renderForecast() {
+  const container = document.getElementById('forecastList');
+  container.innerHTML = forecastData.map((f,i) => `
+    <div class="forecast-row" onclick="showForecastDetail(${i})">
+      <div class="forecast-day">${f.day}</div>
+      <div class="forecast-icon">${f.icon}</div>
+      <div class="forecast-desc">${f.desc}</div>
+      <div class="forecast-rain-bar">
+        <span class="rain-pct">${f.rain}%</span>
+        <div class="rain-bar-bg"><div class="rain-bar-fill" style="width:${f.rain}%"></div></div>
+      </div>
+      <div class="forecast-temps">
+        <span class="temp-hi">${f.hi}°</span>
+        <span class="temp-lo">${f.lo}°</span>
+      </div>
+    </div>`).join('');
+}
+
+function selectHour(el) {
+  document.querySelectorAll('.hour-card').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ─── Radar Canvas ──────────────────────────────────────────────────────────
+let radarMode = 'rain';
+let radarAnimFrame = 0;
+let radarTimer = null;
+
+function drawRadar(canvasId, w, h) {
+  const canvas = document.getElementById(canvasId);
+  if(!canvas) return;
+  canvas.width = canvas.offsetWidth || w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const cw = canvas.width, ch = canvas.height;
+
+  ctx.fillStyle = '#050d1a';
+  ctx.fillRect(0,0,cw,ch);
+
+  // Grid lines
+  ctx.strokeStyle = 'rgba(66,153,225,0.08)';
+  ctx.lineWidth = 1;
+  for(let x=0;x<cw;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,ch);ctx.stroke();}
+  for(let y=0;y<ch;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(cw,y);ctx.stroke();}
+
+  // Sweep ring animation
+  const t = radarAnimFrame * 0.03;
+  const cx = cw*0.5, cy = ch*0.5;
+  const maxR = Math.min(cw,ch)*0.45;
+
+  if(radarMode==='rain') {
+    // Rain cells
+    const cells = [
+      {x:0.35,y:0.4,r:0.22,intensity:0.9},
+      {x:0.65,y:0.3,r:0.14,intensity:0.6},
+      {x:0.5,y:0.65,r:0.16,intensity:0.75},
+      {x:0.2,y:0.7,r:0.1,intensity:0.5},
+    ];
+    cells.forEach(cell=>{
+      const px = cw*cell.x, py = ch*cell.y, rad = Math.min(cw,ch)*cell.r;
+      const pulse = Math.sin(t*0.7)*0.05;
+      const grd = ctx.createRadialGradient(px,py,0,px,py,rad*(1+pulse));
+      const i = cell.intensity;
+      if(i>0.8){
+        grd.addColorStop(0,'rgba(124,58,237,0.9)');
+        grd.addColorStop(0.3,'rgba(29,78,216,0.8)');
+        grd.addColorStop(0.7,'rgba(59,130,246,0.5)');
+        grd.addColorStop(1,'rgba(59,130,246,0)');
+      } else {
+        grd.addColorStop(0,'rgba(29,78,216,0.7)');
+        grd.addColorStop(0.5,'rgba(59,130,246,0.4)');
+        grd.addColorStop(1,'rgba(59,130,246,0)');
+      }
+      ctx.beginPath();
+      ctx.arc(px,py,rad*(1+pulse),0,Math.PI*2);
+      ctx.fillStyle = grd;
+      ctx.fill();
+    });
+  } else if(radarMode==='wind') {
+    // Wind streamlines
+    ctx.strokeStyle = 'rgba(79,209,199,0.3)';
+    ctx.lineWidth = 1.5;
+    for(let r=0;r<8;r++) {
+      ctx.beginPath();
+      let px = cw*(0.1+r*0.11), py = ch*0.5+Math.sin(r*0.9+t)*ch*0.2;
+      ctx.moveTo(px,py);
+      for(let i=0;i<20;i++){
+        px += cw*0.04;
+        py += Math.sin(i*0.5+r+t*0.5)*ch*0.03;
+        ctx.lineTo(px,py);
+      }
+      ctx.stroke();
+    }
+    // Gust zones
+    const gustGrd = ctx.createRadialGradient(cx*0.7,cy,0,cx*0.7,cy,cw*0.3);
+    gustGrd.addColorStop(0,'rgba(79,209,199,0.25)');
+    gustGrd.addColorStop(1,'transparent');
+    ctx.fillStyle=gustGrd; ctx.fillRect(0,0,cw,ch);
+  } else {
+    // Storm cells
+    const storms = [{x:0.4,y:0.4},{x:0.65,y:0.55}];
+    storms.forEach(s=>{
+      const px=cw*s.x, py=ch*s.y;
+      const pulse = Math.abs(Math.sin(t*1.5))*0.2;
+      // Outer ring
+      const grd = ctx.createRadialGradient(px,py,0,px,py,cw*0.25*(1+pulse));
+      grd.addColorStop(0,'rgba(220,38,38,0.8)');
+      grd.addColorStop(0.25,'rgba(124,58,237,0.7)');
+      grd.addColorStop(0.6,'rgba(59,130,246,0.4)');
+      grd.addColorStop(1,'transparent');
+      ctx.beginPath(); ctx.arc(px,py,cw*0.25*(1+pulse),0,Math.PI*2);
+      ctx.fillStyle=grd; ctx.fill();
+      // Eye
+      ctx.beginPath(); ctx.arc(px,py,8,0,Math.PI*2);
+      ctx.fillStyle='rgba(220,38,38,0.9)'; ctx.fill();
+    });
+  }
+
+  // Radar sweep
+  const sweepAngle = t % (Math.PI*2);
+  const sweepGrd = ctx.createConicalGradient ? null : null;
+  ctx.save();
+  ctx.translate(cx,cy);
+  ctx.rotate(sweepAngle);
+  const swGrd = ctx.createLinearGradient(0,0,maxR,0);
+  swGrd.addColorStop(0,'rgba(66,153,225,0.4)');
+  swGrd.addColorStop(1,'rgba(66,153,225,0)');
+  ctx.beginPath(); ctx.moveTo(0,0);
+  ctx.arc(0,0,maxR,-0.3,0); ctx.closePath();
+  ctx.fillStyle=swGrd; ctx.fill();
+  ctx.restore();
+
+  // Range rings
+  [0.25,0.5,0.75,1].forEach(r=>{
+    ctx.beginPath();
+    ctx.arc(cx,cy,maxR*r,0,Math.PI*2);
+    ctx.strokeStyle='rgba(66,153,225,0.15)';
+    ctx.lineWidth=1; ctx.stroke();
+  });
+
+  // Center dot
+  ctx.beginPath(); ctx.arc(cx,cy,4,0,Math.PI*2);
+  ctx.fillStyle='rgba(66,153,225,0.8)'; ctx.fill();
+
+  // Crosshair
+  ctx.strokeStyle='rgba(66,153,225,0.2)'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(cx,0); ctx.lineTo(cx,ch); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0,cy); ctx.lineTo(cw,cy); ctx.stroke();
+
+  // Label
+  ctx.fillStyle='rgba(160,174,192,0.7)';
+  ctx.font='10px -apple-system, sans-serif';
+  ctx.fillText('25 mi', cx+maxR*0.25+2, cy-4);
+  ctx.fillText('50 mi', cx+maxR*0.5+2, cy-4);
+}
+
+function animateRadar() {
+  radarAnimFrame++;
+  drawRadar('radarCanvas', 390, 220);
+  if(document.getElementById('radarModal').classList.contains('open')) {
+    drawRadar('radarCanvasBig', 382, 300);
+  }
+  radarTimer = requestAnimationFrame(animateRadar);
+}
+
+function setRadarMode(mode, btn) {
+  radarMode = mode;
+  document.querySelectorAll('.radar-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+}
+
+// ─── Monsoon gauge ─────────────────────────────────────────────────────────
+function drawGauge() {
+  const canvas = document.getElementById('gaugeCanvas');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0,0,w,h);
+
+  // Monthly bar chart
+  const months = ['J','J','A','S'];
+  const actual = [0.3, 1.8, 2.4, 0];
+  const avg = [0.4, 2.1, 2.8, 1.2];
+  const barW = 40, gap = 28;
+  const startX = (w - (months.length*(barW+gap)-gap))/2;
+  const maxH = h - 40;
+  const maxVal = 4;
+
+  months.forEach((m,i)=>{
+    const x = startX + i*(barW+gap);
+    // Avg bar (ghost)
+    const avgH = (avg[i]/maxVal)*maxH;
+    ctx.fillStyle='rgba(66,153,225,0.15)';
+    ctx.beginPath();
+    roundRect(ctx, x, h-32-avgH, barW, avgH, 6);
+    ctx.fill();
+
+    // Actual bar
+    const actH = (actual[i]/maxVal)*maxH;
+    if(actH > 0) {
+      const grd = ctx.createLinearGradient(0,h-32-actH,0,h-32);
+      grd.addColorStop(0,'rgba(99,179,237,0.9)');
+      grd.addColorStop(1,'rgba(66,153,225,0.6)');
+      ctx.fillStyle=grd;
+      ctx.beginPath();
+      roundRect(ctx, x, h-32-actH, barW, actH, 6);
+      ctx.fill();
+    }
+
+    // Label
+    ctx.fillStyle='rgba(160,174,192,0.7)';
+    ctx.font='11px -apple-system,sans-serif';
+    ctx.textAlign='center';
+    ctx.fillText(m, x+barW/2, h-14);
+
+    // Value
+    if(actual[i]>0){
+      ctx.fillStyle='rgba(99,179,237,0.9)';
+      ctx.font='bold 12px -apple-system,sans-serif';
+      ctx.fillText(actual[i]+'"', x+barW/2, h-32-actH-6);
+    }
+  });
+
+  // Legend
+  ctx.textAlign='left';
+  ctx.fillStyle='rgba(66,153,225,0.4)'; ctx.fillRect(w-120,8,12,8);
+  ctx.fillStyle='rgba(160,174,192,0.6)';
+  ctx.font='10px -apple-system,sans-serif';
+  ctx.fillText('Average', w-104, 17);
+  ctx.fillStyle='rgba(99,179,237,0.8)'; ctx.fillRect(w-120,22,12,8);
+  ctx.fillStyle='rgba(160,174,192,0.6)';
+  ctx.fillText('2025 actual', w-104, 31);
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.moveTo(x+r, y);
+  ctx.lineTo(x+w-r, y);
+  ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+  ctx.lineTo(x+w, y+h);
+  ctx.lineTo(x, y+h);
+  ctx.lineTo(x, y+r);
+  ctx.quadraticCurveTo(x, y, x+r, y);
+  ctx.closePath();
+}
+
+// ─── Wind compass ──────────────────────────────────────────────────────────
+function drawWindCompass(deg) {
+  const canvas = document.getElementById('windCompass');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const sz = canvas.width, cx=sz/2, cy=sz/2, r=sz/2-10;
+  ctx.clearRect(0,0,sz,sz);
+  // Outer ring
+  ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2);
+  ctx.strokeStyle='rgba(66,153,225,0.3)'; ctx.lineWidth=2; ctx.stroke();
+  ctx.fillStyle='rgba(10,20,40,0.8)'; ctx.fill();
+  // Cardinal labels
+  const cards = ['N','E','S','W'];
+  cards.forEach((c,i)=>{
+    const a = i*Math.PI/2 - Math.PI/2;
+    ctx.fillStyle='rgba(160,174,192,0.8)';
+    ctx.font='bold 13px -apple-system,sans-serif';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(c, cx+Math.cos(a)*(r-18), cy+Math.sin(a)*(r-18));
+  });
+  // Tick marks
+  for(let i=0;i<36;i++){
+    const a=i*Math.PI/18-Math.PI/2;
+    const len=i%9===0?10:5;
+    ctx.beginPath();
+    ctx.moveTo(cx+Math.cos(a)*(r-6), cy+Math.sin(a)*(r-6));
+    ctx.lineTo(cx+Math.cos(a)*(r-6-len), cy+Math.sin(a)*(r-6-len));
+    ctx.strokeStyle='rgba(66,153,225,0.3)'; ctx.lineWidth=1; ctx.stroke();
+  }
+  // Arrow
+  const a = (deg-90)*Math.PI/180;
+  ctx.save(); ctx.translate(cx,cy); ctx.rotate(a);
+  ctx.beginPath();
+  ctx.moveTo(0,-r*0.55);
+  ctx.lineTo(8,10); ctx.lineTo(0,4); ctx.lineTo(-8,10); ctx.closePath();
+  ctx.fillStyle='#4299e1'; ctx.fill();
+  // Tail
+  ctx.beginPath();
+  ctx.moveTo(0,r*0.45);
+  ctx.lineTo(6,-2); ctx.lineTo(0,4); ctx.lineTo(-6,-2); ctx.closePath();
+  ctx.fillStyle='rgba(66,153,225,0.3)'; ctx.fill();
+  ctx.restore();
+  // Center dot
+  ctx.beginPath(); ctx.arc(cx,cy,5,0,Math.PI*2);
+  ctx.fillStyle='#4299e1'; ctx.fill();
+}
+
+// ─── Monsoon history chart (Chart.js) ─────────────────────────────────────
+let monsoonChartInstance = null;
+function renderMonsoonChart() {
+  const ctx2 = document.getElementById('monsoonChart');
+  if(!ctx2) return;
+  if(monsoonChartInstance) { monsoonChartInstance.destroy(); }
+  monsoonChartInstance = new Chart(ctx2, {
+    type:'bar',
+    data:{
+      labels:['Jul','Aug','Sep (partial)'],
+      datasets:[
+        {label:'2025',data:[0.3,1.8,2.6],backgroundColor:'rgba(66,153,225,0.7)',borderRadius:6},
+        {label:'Avg',data:[0.4,2.1,2.8],backgroundColor:'rgba(66,153,225,0.2)',borderRadius:6},
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{ticks:{color:'rgba(160,174,192,0.7)',font:{size:11}},grid:{color:'rgba(66,153,225,0.05)'}},
+        y:{ticks:{color:'rgba(160,174,192,0.7)',font:{size:11}},grid:{color:'rgba(66,153,225,0.05)'},title:{display:true,text:'inches',color:'rgba(160,174,192,0.5)',font:{size:10}}}
+      }
+    }
+  });
+}
+
+// ─── Modal system ──────────────────────────────────────────────────────────
+function showModal(id) {
+  document.getElementById(id).classList.add('open');
+  if(id==='windModal') setTimeout(()=>drawWindCompass(getCurrentWindDeg()),100);
+  if(id==='monsoonModal') setTimeout(renderMonsoonChart,100);
+}
+function closeModal(e,overlay) {
+  if(e.target===overlay) overlay.classList.remove('open');
+}
+function closeModalById(id) {
+  document.getElementById(id).classList.remove('open');
+}
+function getCurrentWindDeg(){
+  const d=weatherDB[currentCity]||weatherDB['Phoenix, AZ'];
+  return d.windDeg||225;
+}
+
+// ─── Search ────────────────────────────────────────────────────────────────
+function searchWeather() {
+  const raw = document.getElementById('searchInput').value.trim();
+  if(!raw) return;
+  const loader = document.getElementById('loader');
+  const loadText = document.getElementById('loadingText');
+  loader.classList.add('show');
+  loadText.textContent = 'Fetching weather for '+raw+'…';
+
+  setTimeout(()=>{
+    loader.classList.remove('show');
+    // Try to match input
+    let matched = null;
+    const lower = raw.toLowerCase();
+    for(const city of Object.keys(weatherDB)){
+      if(city.toLowerCase().includes(lower.split(',')[0].trim())||city.toLowerCase()===lower){
+        matched=city; break;
+      }
+    }
+    currentCity = matched || 'Phoenix, AZ';
+    if(!matched) document.getElementById('searchInput').value = 'Phoenix, AZ';
+    else document.getElementById('searchInput').value = currentCity;
+    renderHero(currentCity);
+  }, 1200);
+}
+
+// ─── Forecast detail ───────────────────────────────────────────────────────
+function showForecastDetail(i) {
+  const f = forecastData[i];
+  // Open a rain modal with the forecast data
+  document.getElementById('rainModalSub').textContent = f.day+' · '+f.desc+' · Rain '+f.rain+'%';
+  showModal('rainModal');
+}
+
+// ─── Tab bar ───────────────────────────────────────────────────────────────
+function setTab(el,tab) {
+  document.querySelectorAll('.tab-item').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  if(tab==='alerts') showModal('alertsModal');
+  if(tab==='radar') showModal('radarModal');
+}
+
+// ─── Settings ──────────────────────────────────────────────────────────────
+function setUnit(unit,btn) {
+  tempUnit=unit;
+  document.getElementById('unitF').style.background=unit==='F'?'var(--blue)':'var(--card2)';
+  document.getElementById('unitC').style.background=unit==='C'?'var(--blue)':'var(--card2)';
+  document.getElementById('unitF').style.color=unit==='F'?'#fff':'var(--text)';
+  document.getElementById('unitC').style.color=unit==='C'?'#fff':'var(--text)';
+  renderHero(currentCity);
+}
+
+function toggleSwitch(el) {
+  const knob = el.querySelector('.sw-knob');
+  const isOn = knob.style.right==='2px'||knob.style.right==='';
+  knob.style.right = isOn ? 'calc(100% - 22px)' : '2px';
+  el.style.background = isOn ? 'var(--card2)' : 'var(--blue)';
+}
+
+// ─── Init ──────────────────────────────────────────────────────────────────
+function init() {
+  renderHero(currentCity);
+  renderHourly();
+  renderForecast();
+  drawGauge();
+  animateRadar();
+}
+
+window.addEventListener('load', init);
+window.addEventListener('resize', ()=>{ drawGauge(); });
+</script>
+</body>
+</html>

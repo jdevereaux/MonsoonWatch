@@ -1,0 +1,71 @@
+apply plugin: "com.android.application"
+apply plugin: "com.facebook.react"
+
+react {
+    // The root of your React Native project
+    root = file("../../")
+    // The folder containing your JS entry file
+    reactNativeDir = file("../../node_modules/react-native")
+    // Metro bundler entry
+    jsBundleFile = "index.android.bundle"
+    // Assets output dir — this is where HTML is copied for the APK
+    resourcesDir = file("src/main/res")
+    assetsDir = file("src/main/assets")
+}
+
+android {
+    namespace "com.monsoonwatch"
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.monsoonwatch.weather"
+        minSdk 24          // Android 7.0+ (covers 95%+ of active devices)
+        targetSdk 34
+        versionCode 1
+        versionName "1.0.0"
+    }
+
+    signingConfigs {
+        release {
+            // Fill in before submitting to Play Store:
+            // storeFile     file(MONSOON_UPLOAD_STORE_FILE)
+            // storePassword MONSOON_UPLOAD_STORE_PASSWORD
+            // keyAlias      MONSOON_UPLOAD_KEY_ALIAS
+            // keyPassword   MONSOON_UPLOAD_KEY_PASSWORD
+        }
+    }
+
+    buildTypes {
+        debug {
+            debuggable true
+        }
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+            // signingConfig signingConfigs.release
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    packagingOptions {
+        pickFirst "**/libc++_shared.so"
+        pickFirst "**/libjsc.so"
+    }
+}
+
+dependencies {
+    // React Native core
+    implementation("com.facebook.react:react-android")
+    implementation("com.facebook.react:hermes-android")
+
+    // Splash screen
+    implementation 'org.devio.rn:splashscreen:3.3.0'
+}
+
+apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle")
+applyNativeModulesAppBuildGradle(project)
