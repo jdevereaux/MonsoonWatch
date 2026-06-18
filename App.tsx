@@ -3,7 +3,6 @@ import {StatusBar, StyleSheet, View} from 'react-native';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
-import SplashScreen from 'react-native-splash-screen';
 
 import WeatherScreen from './src/screens/WeatherScreen';
 import OfflineScreen from './src/screens/OfflineScreen';
@@ -17,8 +16,6 @@ const Stack = createStackNavigator<RootStackParamList>();
 
 export default function App(): React.JSX.Element {
   useEffect(() => {
-    // Hide native splash after JS bundle loads
-    SplashScreen.hide();
   }, []);
 
   return (
