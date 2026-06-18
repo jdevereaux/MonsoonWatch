@@ -12,12 +12,12 @@ react {
 
 android {
     namespace "com.monsoonwatch"
-    compileSdk 34
+    compileSdk 35
 
     defaultConfig {
         applicationId "com.monsoonwatch.weather"
         minSdk 24          // Android 7.0+ (covers 95%+ of active devices)
-        targetSdk 34
+        targetSdk 35
         versionCode 1
         versionName "1.0.0"
     }
