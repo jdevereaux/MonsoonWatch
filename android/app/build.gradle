@@ -8,9 +8,6 @@ react {
     root = file("../../")
     // The folder containing your JS entry file
     reactNativeDir = file("../../node_modules/react-native")
-    // Assets output dir — this is where HTML is copied for the APK
-    resourcesDir = file("src/main/res")
-    assetsDir = file("src/main/assets")
 }
 
 android {
