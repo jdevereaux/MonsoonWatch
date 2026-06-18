@@ -20,7 +20,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 const HTML_ASSET =
   Platform.OS === 'android'
     ? {uri: 'file:///android_asset/monsoon_weather_tracker.html'}
-    : require('../src/assets/monsoon_weather_tracker.html');
+    : require('../assets/monsoon_weather_tracker.html');
 
 // JavaScript injected into the WebView at load time.
 // Sets up a two-way bridge between RN and the web page.
