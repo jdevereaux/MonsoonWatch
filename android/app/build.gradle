@@ -24,11 +24,10 @@ android {
 
     signingConfigs {
         release {
-            // Fill in before submitting to Play Store:
-            // storeFile     file(MONSOON_UPLOAD_STORE_FILE)
-            // storePassword MONSOON_UPLOAD_STORE_PASSWORD
-            // keyAlias      MONSOON_UPLOAD_KEY_ALIAS
-            // keyPassword   MONSOON_UPLOAD_KEY_PASSWORD
+            storeFile file(System.getenv("MONSOON_UPLOAD_STORE_FILE") ?: "debug.keystore")
+            storePassword System.getenv("MONSOON_UPLOAD_STORE_PASSWORD") ?: ""
+            keyAlias System.getenv("MONSOON_UPLOAD_KEY_ALIAS") ?: ""
+            keyPassword System.getenv("MONSOON_UPLOAD_KEY_PASSWORD") ?: ""
         }
     }
 
@@ -40,7 +39,7 @@ android {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
-            // signingConfig signingConfigs.release
+            signingConfig signingConfigs.release
         }
     }
 
