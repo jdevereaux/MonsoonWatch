@@ -77,14 +77,19 @@ jobs:
           path: android/app/build/outputs/bundle/release/app-release.aab
           retention-days: 30
 
-      - name: Also build a debug APK for quick device testing
+      - name: Also build a signed release APK for direct device testing
+        env:
+          MONSOON_UPLOAD_STORE_FILE: keystore/monsoon-upload-key.keystore
+          MONSOON_UPLOAD_STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          MONSOON_UPLOAD_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          MONSOON_UPLOAD_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           cd android
-          gradle assembleDebug --no-daemon
+          gradle assembleRelease --no-daemon
 
-      - name: Upload debug APK as downloadable artifact
+      - name: Upload release APK as downloadable artifact
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: app-release-apk
+          path: android/app/build/outputs/apk/release/app-release.apk
           retention-days: 30
