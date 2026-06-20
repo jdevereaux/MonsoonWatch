@@ -45,6 +45,12 @@ jobs:
           grep kotlinVersion android/build.gradle
           echo "=== Installed Kotlin Gradle Plugin version available ==="
           find ~/.gradle -iname "*kotlin-gradle-plugin*.jar" 2>/dev/null | head -5
+          - name: Debug - check Fresco version
+        run: |
+          echo "=== Fresco version referenced in react-native's build.gradle ==="
+          grep -i fresco node_modules/react-native/ReactAndroid/build.gradle 2>/dev/null | head -10
+          echo "=== React Native version installed ==="
+          cat node_modules/react-native/package.json | grep '"version"'
       - name: Copy HTML asset into Android assets folder
         run: |
           mkdir -p android/app/src/main/assets
