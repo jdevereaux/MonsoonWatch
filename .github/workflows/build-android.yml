@@ -33,10 +33,12 @@ jobs:
           find node_modules/@react-native/gradle-plugin -iname "*ReactExtension*"
           echo "=== Printing its contents ==="
           find node_modules/@react-native/gradle-plugin -iname "*ReactExtension*.kt" -exec cat {} \;
+
       - name: Debug - inspect native_modules.gradle autolinking helpers
         run: |
           echo "=== Searching for autolinking settings helper ==="
           grep -n "def \|fun \|projectDir\|include(" node_modules/@react-native-community/cli-platform-android/native_modules.gradle | head -40
+
       - name: Debug - check Kotlin version requirements
         run: |
           echo "=== react-native-screens build.gradle Kotlin requirement ==="
@@ -45,12 +47,14 @@ jobs:
           grep kotlinVersion android/build.gradle
           echo "=== Installed Kotlin Gradle Plugin version available ==="
           find ~/.gradle -iname "*kotlin-gradle-plugin*.jar" 2>/dev/null | head -5
-          - name: Debug - check Fresco version
+
+      - name: Debug - check Fresco version
         run: |
           echo "=== Fresco version referenced in react-native's build.gradle ==="
           grep -i fresco node_modules/react-native/ReactAndroid/build.gradle 2>/dev/null | head -10
           echo "=== React Native version installed ==="
           cat node_modules/react-native/package.json | grep '"version"'
+
       - name: Copy HTML asset into Android assets folder
         run: |
           mkdir -p android/app/src/main/assets
