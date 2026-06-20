@@ -37,7 +37,14 @@ jobs:
         run: |
           echo "=== Searching for autolinking settings helper ==="
           grep -n "def \|fun \|projectDir\|include(" node_modules/@react-native-community/cli-platform-android/native_modules.gradle | head -40
-
+      - name: Debug - check Kotlin version requirements
+        run: |
+          echo "=== react-native-screens build.gradle Kotlin requirement ==="
+          cat node_modules/react-native-screens/android/build.gradle | grep -i kotlin
+          echo "=== Root project Kotlin version ==="
+          grep kotlinVersion android/build.gradle
+          echo "=== Installed Kotlin Gradle Plugin version available ==="
+          find ~/.gradle -iname "*kotlin-gradle-plugin*.jar" 2>/dev/null | head -5
       - name: Copy HTML asset into Android assets folder
         run: |
           mkdir -p android/app/src/main/assets
