@@ -17,6 +17,10 @@ buildscript {
     }
 }
 
+plugins {
+    id("com.facebook.react.rootproject")
+}
+
 // Expose these values to subproject build.gradle files (e.g. react-native-screens'
 // safeExtGet('kotlinVersion', ...) call) so every module compiles against the same
 // Kotlin version instead of silently falling back to its own bundled default.
@@ -27,8 +31,4 @@ ext {
     targetSdkVersion  = 35
     ndkVersion        = "26.1.10909125"
     kotlinVersion     = "1.9.22"
-}
-
-plugins {
-    id("com.facebook.react.rootproject")
 }
