@@ -4,10 +4,9 @@ plugins {
 }
 
 react {
-    // The root of your React Native project
     root = file("../../")
-    // The folder containing your JS entry file
     reactNativeDir = file("../../node_modules/react-native")
+    autolinkLibrariesWithApp()
 }
 
 android {
@@ -16,9 +15,9 @@ android {
 
     defaultConfig {
         applicationId "com.monsoonwatch.weather"
-        minSdk 24          // Android 7.0+ (covers 95%+ of active devices)
+        minSdk 24
         targetSdk 35
-        versionCode 3
+        versionCode 4
         versionName "1.0.0"
     }
 
@@ -55,12 +54,6 @@ android {
 }
 
 dependencies {
-    // React Native core
     implementation("com.facebook.react:react-android")
     implementation("com.facebook.react:hermes-android")
-
-    // Splash screen
 }
-
-apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle")
-applyNativeModulesAppBuildGradle(project)

@@ -1,18 +1,18 @@
 buildscript {
     ext {
-        buildToolsVersion = "34.0.0"
+        buildToolsVersion = "35.0.0"
         minSdkVersion    = 24
         compileSdkVersion = 35
         targetSdkVersion  = 35
         ndkVersion        = "26.1.10909125"
-        kotlinVersion     = "1.9.22"
+        kotlinVersion     = "1.9.24"
     }
     repositories {
         google()
         mavenCentral()
     }
     dependencies {
-        classpath("com.android.tools.build:gradle:8.5.2")
+        classpath("com.android.tools.build:gradle:8.7.2")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
     }
 }
@@ -21,14 +21,11 @@ plugins {
     id("com.facebook.react.rootproject")
 }
 
-// Expose these values to subproject build.gradle files (e.g. react-native-screens'
-// safeExtGet('kotlinVersion', ...) call) so every module compiles against the same
-// Kotlin version instead of silently falling back to its own bundled default.
 ext {
-    buildToolsVersion = "34.0.0"
+    buildToolsVersion = "35.0.0"
     minSdkVersion    = 24
     compileSdkVersion = 35
     targetSdkVersion  = 35
     ndkVersion        = "26.1.10909125"
-    kotlinVersion     = "1.9.22"
+    kotlinVersion     = "1.9.24"
 }
