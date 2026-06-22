@@ -10,6 +10,7 @@ import com.facebook.react.defaults.DefaultReactHost;
 import com.facebook.react.defaults.DefaultReactNativeHost;
 import com.facebook.soloader.SoLoader;
 import java.util.List;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
@@ -17,7 +18,8 @@ public class MainApplication extends Application implements ReactApplication {
 
     private void log(String msg) {
         try {
-            FileWriter fw = new FileWriter("/sdcard/monsoon_log.txt", true);
+            File f = new File(getFilesDir(), "monsoon_log.txt");
+            FileWriter fw = new FileWriter(f, true);
             fw.write(msg + "\n");
             fw.close();
         } catch (IOException e) {}
