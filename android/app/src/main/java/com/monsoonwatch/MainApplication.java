@@ -8,8 +8,18 @@ import com.facebook.react.ReactPackage;
 import com.facebook.react.defaults.DefaultReactNativeHost;
 import com.facebook.soloader.SoLoader;
 import java.util.List;
+import java.io.FileWriter;
+import java.io.IOException;
 
 public class MainApplication extends Application implements ReactApplication {
+
+    private void log(String msg) {
+        try {
+            FileWriter fw = new FileWriter("/sdcard/monsoon_log.txt", true);
+            fw.write(msg + "\n");
+            fw.close();
+        } catch (IOException e) {}
+    }
 
     private final ReactNativeHost mReactNativeHost =
         new DefaultReactNativeHost(this) {
@@ -47,6 +57,14 @@ public class MainApplication extends Application implements ReactApplication {
     @Override
     public void onCreate() {
         super.onCreate();
-        SoLoader.init(this, false);
+        log("onCreate started");
+        try {
+            SoLoader.init(this, false);
+            log("SoLoader OK");
+        } catch (Throwable t) {
+            log("SoLoader FAILED: " + t.getMessage());
+            return;
+        }
+        log("onCreate complete");
     }
 }
