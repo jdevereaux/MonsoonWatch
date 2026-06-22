@@ -9,9 +9,6 @@
 }
 -keepattributes JavascriptInterface
 
-# Splash screen
--keep class org.devio.rn.splashscreen.** { *; }
-
 # Geolocation
 -keep class com.agontuk.RNFusedLocation.** { *; }
 
