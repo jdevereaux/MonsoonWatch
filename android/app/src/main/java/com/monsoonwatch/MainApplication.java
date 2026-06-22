@@ -3,11 +3,8 @@ package com.monsoonwatch;
 import android.app.Application;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
-import com.facebook.react.ReactHost;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
-import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint;
-import com.facebook.react.defaults.DefaultReactHost;
 import com.facebook.react.defaults.DefaultReactNativeHost;
 import com.facebook.soloader.SoLoader;
 import java.util.List;
@@ -45,11 +42,6 @@ public class MainApplication extends Application implements ReactApplication {
     @Override
     public ReactNativeHost getReactNativeHost() {
         return mReactNativeHost;
-    }
-
-    @Override
-    public ReactHost getReactHost() {
-        return DefaultReactHost.getDefaultReactHost(getApplicationContext(), mReactNativeHost);
     }
 
     @Override
