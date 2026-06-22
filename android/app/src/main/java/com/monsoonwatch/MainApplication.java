@@ -3,8 +3,10 @@ package com.monsoonwatch;
 import android.app.Application;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
+import com.facebook.react.ReactHost;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
+import com.facebook.react.defaults.DefaultReactHost;
 import com.facebook.react.defaults.DefaultReactNativeHost;
 import com.facebook.soloader.SoLoader;
 import java.util.List;
@@ -55,6 +57,11 @@ public class MainApplication extends Application implements ReactApplication {
     }
 
     @Override
+    public ReactHost getReactHost() {
+        return DefaultReactHost.getDefaultReactHost(getApplicationContext(), mReactNativeHost);
+    }
+
+    @Override
     public void onCreate() {
         super.onCreate();
         log("onCreate started");
@@ -62,8 +69,7 @@ public class MainApplication extends Application implements ReactApplication {
             SoLoader.init(this, false);
             log("SoLoader OK");
         } catch (Throwable t) {
-            log("SoLoader FAILED: " + t.getMessage());
-            return;
+            log("SoLoader FAILED: " + t);
         }
         log("onCreate complete");
     }
