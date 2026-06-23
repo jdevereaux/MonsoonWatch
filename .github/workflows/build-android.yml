@@ -110,3 +110,8 @@ jobs:
           name: app-release-apk
           path: android/app/build/outputs/apk/release/app-release.apk
           retention-days: 30
+
+      - name: Debug - print RN 0.76 MainApplication template
+        run: |
+          find node_modules/react-native -path "*/template*MainApplication*" 2>/dev/null
+          find node_modules/react-native -path "*/template*MainApplication*" -exec cat {} \; 2>/dev/null
