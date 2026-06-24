@@ -18,11 +18,14 @@ public class MainApplication extends Application implements ReactApplication {
 
     private void log(String msg) {
         try {
-            File f = new File(getFilesDir(), "monsoon_log.txt");
-            FileWriter fw = new FileWriter(f, true);
-            fw.write(msg + "\n");
-            fw.close();
-        } catch (IOException e) {}
+            File dir = getExternalFilesDir(null);
+            if (dir != null) {
+                dir.mkdirs();
+                FileWriter fw = new FileWriter(new File(dir, "monsoon_log.txt"), true);
+                fw.write(msg + "\n");
+                fw.close();
+            }
+        } catch (Throwable t) {}
     }
 
     private final ReactNativeHost mReactNativeHost =
